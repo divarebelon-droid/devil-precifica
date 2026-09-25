@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Central privada de precificação, rentabilidade e separação financeira.">
+  <meta name="theme-color" content="#0b0b0e">
+  <title>DEVIL Precifica</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b0b0e'/%3E%3Cpath d='M18 16h16c10 0 16 6 16 16S44 48 34 48H18V16Zm10 9v14h6c4 0 6-2 6-7s-2-7-6-7h-6Z' fill='%23a78bfa'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">D</div>
+        <div><strong>DEVIL</strong><span>PRECIFICA</span></div>
+      </div>
+
+      <div class="business-switch" role="group" aria-label="Empresa ativa">
+        <button class="business-btn active" data-business="oficina"><span class="business-dot oficina"></span>Oficina</button>
+        <button class="business-btn" data-business="diva"><span class="business-dot diva"></span>Diva Rebel</button>
+      </div>
+
+      <nav class="nav" aria-label="Navegação principal">
+        <button class="nav-item active" data-view="dashboard"><span>⌂</span>Visão geral</button>
+        <button class="nav-item" data-view="estrutura"><span>◇</span>Estrutura</button>
+        <button class="nav-item" data-view="tempo"><span>◷</span>Tempo e capacidade</button>
+        <button class="nav-item" data-view="ofertas"><span>▦</span>Ofertas</button>
+        <button class="nav-item" data-view="clientes"><span>◎</span>Clientes</button>
+        <button class="nav-item" data-view="recebimentos"><span>↗</span>Recebimentos</button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="privacy-note"><span></span>Dados salvos neste navegador</div>
+        <button class="ghost-btn full" id="exportBtn">Exportar relatório em PDF</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu" aria-label="Abrir menu">☰</button>
+        <div>
+          <p class="eyebrow" id="businessLabel">OFICINA DIVA REBEL</p>
+          <h1 id="pageTitle">Visão geral</h1>
+        </div>
+        <div class="save-state" id="saveState"><span></span>Salvo</div>
+      </header>
+
+      <section class="view active" id="view-dashboard">
+        <div class="dashboard-head">
+          <div>
+            <p class="kicker">SEU NEGÓCIO, EM NÚMEROS</p>
+            <h2>O preço certo começa<br>na estrutura certa.</h2>
+          </div>
+          <div class="health-ring" id="healthRing" aria-label="Saúde da precificação">
+            <div><strong id="healthScore">0</strong><span>/100</span><small>saúde</small></div>
+          </div>
+        </div>
+
+        <div class="metric-grid">
+          <article class="metric-card primary"><span>Preço/hora saudável</span><strong id="dashPriceHour">R$ 0,00</strong><small>inclui impostos, margem e proteção</small></article>
+          <article class="metric-card"><span>Faturamento necessário</span><strong id="dashRevenue">R$ 0</strong><small>meta mínima mensal</small></article>
+          <article class="metric-card"><span>Capacidade produtiva</span><strong id="dashCapacity">0h</strong><small>horas reais disponíveis no mês</small></article>
+          <article class="metric-card"><span>Margem da carteira</span><strong id="dashPortfolioMargin">—</strong><small>com clientes cadastrados</small></article>
+        </div>
+
+        <div class="dashboard-grid">
+          <article class="panel next-action">
+            <div class="panel-title"><div><span class="section-num">01</span><h3>Próxima decisão</h3></div></div>
+            <div class="decision-content" id="decisionContent">
+              <span class="status-pill neutral">Comece pela estrutura</span>
+              <h4>Preencha seus custos para descobrir o preço mínimo sustentável.</h4>
+              <button class="text-btn" data-go="estrutura">Configurar estrutura →</button>
+            </div>
+          </article>
+
+          <article class="panel allocation-panel">
+            <div class="panel-title"><div><span class="section-num">02</span><h3>Regra de distribuição</h3></div><button class="text-btn" data-go="recebimentos">Editar</button></div>
+            <div class="allocation-bar" aria-label="Distribuição 30 30 40"><span class="invest" id="barInvest" style="width:30%"></span><span class="prolabore" id="barProlabore" style="width:30%"></span><span class="cash" id="barCash" style="width:40%"></span></div>
+            <div class="allocation-legend">
+              <div><i class="invest"></i><span>Investimento</span><strong id="legendInvest">30%</strong></div>
+              <div><i class="prolabore"></i><span>Pró-labore</span><strong id="legendProlabore">30%</strong></div>
+              <div><i class="cash"></i><span>Caixa</span><strong id="legendCash">40%</strong></div>
+            </div>
+            <p class="small-note">A distribuição acontece sobre o valor líquido, depois de imposto e custo direto.</p>
+          </article>
+        </div>
+
+        <article class="panel portfolio-summary">
+          <div class="panel-title"><div><span class="section-num">03</span><h3>Carteira atual</h3></div><button class="text-btn" data-go="clientes">Gerenciar clientes →</button></div>
+          <div class="summary-row">
+            <div><span>Clientes ativos</span><strong id="summaryClients">0</strong></div>
+            <div><span>Receita mensal</span><strong id="summaryClientRevenue">R$ 0</strong></div>
+            <div><span>Horas consumidas</span><strong id="summaryClientHours">0h</strong></div>
+            <div><span>Capacidade livre</span><strong id="summaryFreeCapacity">0h</strong></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="view" id="view-estrutura">
+        <div class="section-intro"><div><p class="kicker">BASE FINANCEIRA</p><h2>Quanto custa manter esta empresa viva?</h2></div><p>Separe o que paga a operação, o que remunera você e o que prepara o próximo nível.</p></div>
+        <div class="two-col">
+          <article class="panel form-panel">
+            <div class="panel-title"><div><span class="section-num">01</span><h3>Remuneração da dona</h3></div></div>
+            <div class="form-grid two">
+              <label>Pró-labore desejado <span>Quanto você precisa retirar por mês</span><div class="money-input"><b>R$</b><input type="number" min="0" step="100" data-field="prolabore" placeholder="0"></div></label>
+              <label>Salário de reposição <span>Quanto custaria alguém no seu lugar</span><div class="money-input"><b>R$</b><input type="number" min="0" step="100" data-field="replacementSalary" placeholder="0"></div></label>
+            </div>
+            <label class="toggle-row"><input type="checkbox" data-field="includeReplacement"><span class="toggle"></span><span><strong>Incluir reposição no preço</strong><small>Use quando estiver se preparando para delegar sua função.</small></span></label>
+          </article>
+
+          <article class="panel form-panel">
+            <div class="panel-title"><div><span class="section-num">02</span><h3>Custos mensais</h3></div></div>
+            <div class="form-grid two">
+              <label>Ferramentas <div class="money-input"><b>R$</b><input type="number" min="0" data-field="tools" placeholder="0"></div></label>
+              <label>Contabilidade e taxas fixas <div class="money-input"><b>R$</b><input type="number" min="0" data-field="accounting" placeholder="0"></div></label>
+              <label>Infraestrutura <div class="money-input"><b>R$</b><input type="number" min="0" data-field="infrastructure" placeholder="0"></div></label>
+              <label>Outros custos fixos <div class="money-input"><b>R$</b><input type="number" min="0" data-field="otherFixed" placeholder="0"></div></label>
+              <label>Equipe e freelancers atuais <div class="money-input"><b>R$</b><input type="number" min="0" data-field="currentTeam" placeholder="0"></div></label>
+              <label>Contratações planejadas <div class="money-input"><b>R$</b><input type="number" min="0" data-field="futureTeam" placeholder="0"></div></label>
+            </div>
+          </article>
+        </div>
+
+        <article class="panel form-panel">
+          <div class="panel-title"><div><span class="section-num">03</span><h3>Proteção, lucro e imposto</h3></div></div>
+          <div class="form-grid four">
+            <label>Imposto sobre faturamento <div class="percent-input"><input type="number" min="0" max="60" step="0.1" data-field="taxRate" placeholder="0"><b>%</b></div></label>
+            <label>Margem de lucro desejada <div class="percent-input"><input type="number" min="0" max="60" step="1" data-field="profitMargin" value="15"><b>%</b></div></label>
+            <label>Reserva de proteção <div class="percent-input"><input type="number" min="0" max="60" step="1" data-field="safetyReserve" value="10"><b>%</b></div></label>
+            <label>Folga para imprevistos <div class="percent-input"><input type="number" min="0" max="50" step="1" data-field="riskBuffer" value="10"><b>%</b></div></label>
+          </div>
+          <div class="formula-result">
+            <div><span>Custo estrutural mensal</span><strong id="structuralCost">R$ 0</strong></div>
+            <div><span>Receita mínima sustentável</span><strong id="minimumRevenue">R$ 0</strong></div>
+            <p id="structureExplanation">Preencha os valores acima para ver a composição.</p>
+          </div>
+        </article>
+      </section>
+
+      <section class="view" id="view-tempo">
+        <div class="section-intro"><div><p class="kicker">CAPACIDADE REAL</p><h2>Seu mês não tem 160 horas vendáveis.</h2></div><p>O sistema desconta pausas, gestão e comercial antes de calcular o valor da sua hora.</p></div>
+        <div class="two-col">
+          <article class="panel form-panel">
+            <div class="panel-title"><div><span class="section-num">01</span><h3>Rotina desejada</h3></div></div>
+            <div class="form-grid two">
+              <label>Horas por dia <div class="unit-input"><input type="number" min="1" max="16" step="0.5" data-field="hoursDay" value="8"><b>h</b></div></label>
+              <label>Dias por semana <div class="unit-input"><input type="number" min="1" max="7" step="1" data-field="daysWeek" value="5"><b>dias</b></div></label>
+              <label>Produtividade real <span>Tempo realmente aproveitável</span><div class="percent-input"><input type="number" min="20" max="100" step="5" data-field="productivity" value="70"><b>%</b></div></label>
+              <label>Tempo para gestão e comercial <span>Dentro das horas produtivas</span><div class="percent-input"><input type="number" min="0" max="80" step="5" data-field="adminShare" value="25"><b>%</b></div></label>
+            </div>
+          </article>
+          <article class="panel capacity-visual">
+            <div class="panel-title"><div><span class="section-num">02</span><h3>Seu mês possível</h3></div></div>
+            <div class="capacity-big"><strong id="productiveHours">0h</strong><span>produtivas para entregar</span></div>
+            <div class="capacity-track"><span id="deliveryTrack"></span></div>
+            <div class="capacity-labels"><span><i></i>Entrega <b id="deliveryHours">0h</b></span><span><i></i>Gestão e comercial <b id="adminHours">0h</b></span></div>
+            <div class="hour-values"><div><span>Custo/hora</span><strong id="costHour">R$ 0,00</strong></div><div><span>Preço/hora saudável</span><strong id="healthyHour">R$ 0,00</strong></div></div>
+          </article>
+        </div>
+        <article class="panel form-panel">
+          <div class="panel-title"><div><span class="section-num">03</span><h3>Onde seu tempo vai embora?</h3></div></div>
+          <div class="time-tags" id="timeTags">
+            <label><span>Atendimento</span><input type="number" min="0" data-time="atendimento" placeholder="0"><b>h/mês</b></label>
+            <label><span>Reuniões</span><input type="number" min="0" data-time="reunioes" placeholder="0"><b>h/mês</b></label>
+            <label><span>Conteúdo próprio</span><input type="number" min="0" data-time="conteudo" placeholder="0"><b>h/mês</b></label>
+            <label><span>Administrativo</span><input type="number" min="0" data-time="administrativo" placeholder="0"><b>h/mês</b></label>
+          </div>
+          <p class="insight" id="timeInsight">Registre o tempo invisível para não cobrar apenas pela execução.</p>
+        </article>
+      </section>
+
+      <section class="view" id="view-ofertas">
+        <div class="section-intro"><div><p class="kicker">CONSTRUTOR DE OFERTAS</p><h2>Preço mínimo, saudável e estratégico.</h2></div><p>Cada oferta nasce das horas, custos diretos, risco de escopo e valor estratégico.</p></div>
+        <div class="offer-toolbar"><button class="primary-btn" id="addOfferBtn">+ Nova oferta</button></div>
+        <div class="offer-grid" id="offerGrid"></div>
+        <article class="panel mix-panel">
+          <div class="panel-title"><div><span class="section-num">◎</span><h3>Simulador de carteira</h3></div></div>
+          <div id="mixRows" class="mix-rows"></div>
+          <div class="mix-results"><div><span>Faturamento projetado</span><strong id="mixRevenue">R$ 0</strong></div><div><span>Horas necessárias</span><strong id="mixHours">0h</strong></div><div><span>Capacidade</span><strong id="mixCapacity">0%</strong></div><div><span>Resultado</span><strong id="mixResult">—</strong></div></div>
+        </article>
+      </section>
+
+      <section class="view" id="view-clientes">
+        <div class="section-intro"><div><p class="kicker">RENTABILIDADE REAL</p><h2>Quem sustenta e quem drena sua empresa?</h2></div><p>Compare o que cada cliente paga com o tempo e os custos que realmente consome.</p></div>
+        <article class="panel form-panel compact-form">
+          <div class="panel-title"><div><span class="section-num">+</span><h3>Adicionar cliente</h3></div></div>
+          <form id="clientForm" class="inline-form">
+            <label>Cliente<input required name="name" placeholder="Nome do cliente"></label>
+            <label>Oferta<select name="offer" id="clientOffer"></select></label>
+            <label>Valor mensal<div class="money-input"><b>R$</b><input required type="number" min="0" name="price" placeholder="0"></div></label>
+            <label>Horas reais<div class="unit-input"><input required type="number" min="0" step="0.5" name="hours" placeholder="0"><b>h</b></div></label>
+            <label>Custo direto<div class="money-input"><b>R$</b><input type="number" min="0" name="directCost" placeholder="0"></div></label>
+            <button class="primary-btn" type="submit">Adicionar</button>
+          </form>
+        </article>
+        <div class="client-list" id="clientList"></div>
+        <div class="empty-state" id="clientEmpty"><div>◎</div><h3>Nenhum cliente cadastrado</h3><p>Adicione o primeiro para descobrir a rentabilidade real da sua carteira.</p></div>
+      </section>
+
+      <section class="view" id="view-recebimentos">
+        <div class="section-intro"><div><p class="kicker">DINHEIRO COM DESTINO</p><h2>Cada recebimento já entra organizado.</h2></div><p>Primeiro são separados imposto e custo direto. Depois, o líquido segue sua regra.</p></div>
+        <div class="two-col receipt-layout">
+          <article class="panel form-panel">
+            <div class="panel-title"><div><span class="section-num">01</span><h3>Novo recebimento</h3></div></div>
+            <form id="receiptForm" class="stack-form">
+              <div class="form-grid two">
+                <label>Origem / cliente<input required name="source" placeholder="Ex.: Plano de Negócios — Bruna"></label>
+                <label>Data<input required name="date" type="date"></label>
+                <label>Valor recebido<div class="money-input"><b>R$</b><input required type="number" min="0" step="0.01" name="gross" placeholder="0"></div></label>
+                <label>Custo direto deste recebimento<div class="money-input"><b>R$</b><input type="number" min="0" step="0.01" name="directCost" placeholder="0"></div></label>
+              </div>
+              <button class="primary-btn" type="submit">Calcular e registrar</button>
+            </form>
+          </article>
+          <article class="panel form-panel split-settings">
+            <div class="panel-title"><div><span class="section-num">02</span><h3>Sua regra</h3></div><span class="total-badge" id="splitTotal">100%</span></div>
+            <div class="split-inputs">
+              <label><i class="invest"></i><span>Investimento</span><div class="percent-input"><input type="number" min="0" max="100" data-split="invest" value="30"><b>%</b></div></label>
+              <label><i class="prolabore"></i><span>Pró-labore</span><div class="percent-input"><input type="number" min="0" max="100" data-split="prolabore" value="30"><b>%</b></div></label>
+              <label><i class="cash"></i><span>Caixa</span><div class="percent-input"><input type="number" min="0" max="100" data-split="cash" value="40"><b>%</b></div></label>
+            </div>
+            <p class="small-note">A soma precisa ser 100%. A regra fica separada para cada empresa.</p>
+          </article>
+        </div>
+        <div class="receipt-totals">
+          <div><span>Total recebido</span><strong id="receiptGrossTotal">R$ 0</strong></div>
+          <div><span>Impostos reservados</span><strong id="receiptTaxTotal">R$ 0</strong></div>
+          <div><span>Para investimento</span><strong id="receiptInvestTotal">R$ 0</strong></div>
+          <div><span>Para pró-labore</span><strong id="receiptProlaboreTotal">R$ 0</strong></div>
+          <div><span>Para caixa</span><strong id="receiptCashTotal">R$ 0</strong></div>
+        </div>
+        <div class="receipt-list" id="receiptList"></div>
+        <div class="empty-state" id="receiptEmpty"><div>↗</div><h3>Nenhum recebimento registrado</h3><p>Quando um pagamento entrar, registre aqui para saber exatamente quanto separar.</p></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="offerModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="offerModalTitle">
+      <button class="modal-close" type="button" id="closeOfferModal" aria-label="Fechar">×</button>
+      <p class="kicker">OFERTA</p><h2 id="offerModalTitle">Nova oferta</h2>
+      <form id="offerForm" class="stack-form">
+        <input type="hidden" name="id">
+        <label>Nome da oferta<input required name="name" placeholder="Ex.: Plano de Negócios"></label>
+        <label>O que está incluso<textarea name="deliverables" rows="4" placeholder="Entregas, reuniões, suporte, revisões..."></textarea></label>
+        <div class="form-grid two">
+          <label>Horas por cliente/mês<div class="unit-input"><input required type="number" min="0" step="0.5" name="hours" placeholder="0"><b>h</b></div></label>
+          <label>Custo direto por cliente<div class="money-input"><b>R$</b><input type="number" min="0" name="directCost" placeholder="0"></div></label>
+          <label>Risco de escopo<div class="percent-input"><input type="number" min="0" max="100" name="risk" value="10"><b>%</b></div></label>
+          <label>Valor estratégico adicional<div class="percent-input"><input type="number" min="0" max="200" name="premium" value="20"><b>%</b></div></label>
+        </div>
+        <button class="primary-btn" type="submit">Salvar oferta</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>
