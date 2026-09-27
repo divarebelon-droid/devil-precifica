@@ -209,10 +209,14 @@ function renderClients() {
   list.innerHTML = p.clients.map(client => {
     const offer = p.offers.find(o => o.id === client.offer);
     const tax = num(client.price) * num(p.config.taxRate) / 100;
+    const available = Math.max(0, num(client.price) - tax - num(client.directCost));
+    const invest = available * num(p.splits.invest) / 100;
+    const prolabore = available * num(p.splits.prolabore) / 100;
+    const cash = available * num(p.splits.cash) / 100;
     const profit = num(client.price) - tax - num(client.directCost) - num(client.hours) * m.costHour;
     const margin = num(client.price) ? profit / num(client.price) * 100 : 0;
     const status = margin < 0 ? ['bad','Prejuízo'] : margin < num(p.config.profitMargin) ? ['warn','Atenção'] : ['good','Saudável'];
-    return `<article class="client-row"><div class="client-name"><span>CLIENTE</span><strong>${escapeHtml(client.name)}</strong></div><div><span>OFERTA</span><strong>${escapeHtml(offer?.name || 'Personalizada')}</strong></div><div><span>VALOR</span><strong>${wholeMoney(client.price)}</strong></div><div><span>HORAS</span><strong>${num(client.hours)}h</strong></div><div><span>VALOR/HORA</span><strong>${money(num(client.hours) ? num(client.price)/num(client.hours) : 0)}</strong></div><div><span>MARGEM</span><strong>${pct(margin)}</strong></div><strong class="profit-status ${status[0]}">${status[1]}</strong><button class="icon-btn danger-link" data-delete-client="${client.id}" aria-label="Excluir cliente">×</button></article>`;
+    return `<article class="client-card"><div class="client-row"><div class="client-name"><span>CLIENTE</span><strong>${escapeHtml(client.name)}</strong></div><div><span>OFERTA</span><strong>${escapeHtml(offer?.name || 'Personalizada')}</strong></div><div><span>VALOR</span><strong>${wholeMoney(client.price)}</strong></div><div><span>HORAS</span><strong>${num(client.hours)}h</strong></div><div><span>VALOR/HORA</span><strong>${money(num(client.hours) ? num(client.price)/num(client.hours) : 0)}</strong></div><div><span>MARGEM</span><strong>${pct(margin)}</strong></div><strong class="profit-status ${status[0]}">${status[1]}</strong><button class="icon-btn danger-link" data-delete-client="${client.id}" aria-label="Excluir cliente">×</button></div><div class="client-allocation"><div><span>DISPONÍVEL PARA DIVIDIR</span><strong>${money(available)}</strong><small>após ${money(tax)} de imposto e ${money(client.directCost)} de custo direto</small></div><div class="allocation-item invest-item"><span>INVESTIMENTO ${num(p.splits.invest)}%</span><strong>${money(invest)}</strong></div><div class="allocation-item prolabore-item"><span>PRÓ-LABORE ${num(p.splits.prolabore)}%</span><strong>${money(prolabore)}</strong></div><div class="allocation-item cash-item"><span>CAIXA ${num(p.splits.cash)}%</span><strong>${money(cash)}</strong></div></div></article>`;
   }).join('');
   $('#clientEmpty').style.display = p.clients.length ? 'none' : 'block';
 }
@@ -283,6 +287,14 @@ $('#offerForm').addEventListener('submit', event => {
 
 $('#clientForm').addEventListener('submit', event => {
   event.preventDefault(); const f=new FormData(event.currentTarget); profile().clients.push({id:crypto.randomUUID(),name:String(f.get('name')).trim(),offer:String(f.get('offer')),price:num(f.get('price')),hours:num(f.get('hours')),directCost:num(f.get('directCost'))}); event.currentTarget.reset(); save(); renderAll(); toast('Cliente adicionado');
+});
+
+$('#clientOffer').addEventListener('change', event => {
+  const offer = profile().offers.find(item => item.id === event.target.value);
+  if (!offer) return;
+  const form = $('#clientForm');
+  form.elements.hours.value = num(offer.hours) || '';
+  form.elements.directCost.value = num(offer.directCost) || '';
 });
 
 $('#receiptForm').addEventListener('submit', event => {
