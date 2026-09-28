@@ -1,0 +1,58 @@
+.client-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  overflow: hidden;
+}
+
+.client-card .client-row {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.client-allocation {
+  display: grid;
+  grid-template-columns: 1.45fr repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border-top: 1px solid var(--line);
+}
+
+.client-allocation > div {
+  background: #0e0e13;
+  padding: 14px 18px;
+  display: grid;
+  gap: 5px;
+}
+
+.client-allocation span {
+  color: var(--muted);
+  font-size: .65rem;
+}
+
+.client-allocation strong {
+  font: 750 .95rem Manrope;
+}
+
+.client-allocation small {
+  color: #777482;
+  font-size: .62rem;
+}
+
+.client-allocation .invest-item strong { color: #b9a6ff; }
+.client-allocation .prolabore-item strong { color: var(--cyan); }
+.client-allocation .cash-item strong { color: var(--gold); }
+
+@media (max-width: 1100px) {
+  .client-allocation { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .client-allocation { grid-template-columns: 1fr; }
+}
+
+@media print {
+  .client-card { background: #fff; color: #111; border-color: #ccc; }
+  .client-allocation > div { background: #fff; }
+}
