@@ -9,7 +9,13 @@
   <style>
     html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #0b0b0e; }
     body > :not(#cloudApp) { display: none !important; }
-    #cloudApp { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; background: #0b0b0e; }
+    #cloudApp { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px; box-sizing: border-box; background: radial-gradient(circle at 50% 20%, #24163f 0, #0b0b0e 50%); color: #fff; font-family: "DM Sans", sans-serif; }
+    .cloud-card { width: min(520px, 100%); padding: 52px 42px; box-sizing: border-box; text-align: center; border: 1px solid #33264b; border-radius: 28px; background: rgba(18, 16, 24, .94); box-shadow: 0 24px 80px rgba(0,0,0,.45); }
+    .cloud-mark { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 22px; border-radius: 18px; background: #a78bfa; color: #120f19; font: 800 32px/1 Manrope, sans-serif; }
+    .cloud-card h1 { margin: 0 0 10px; font: 800 34px/1.05 Manrope, sans-serif; }
+    .cloud-card p { margin: 0 0 28px; color: #b8b1c6; line-height: 1.6; }
+    .cloud-login { display: inline-flex; align-items: center; justify-content: center; width: 100%; min-height: 54px; border-radius: 14px; background: #fff; color: #16131d; text-decoration: none; font-weight: 700; }
+    .cloud-card small { display: block; margin-top: 18px; color: #81788f; }
   </style>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b0b0e'/%3E%3Cpath d='M18 16h16c10 0 16 6 16 16S44 48 34 48H18V16Zm10 9v14h6c4 0 6-2 6-7s-2-7-6-7h-6Z' fill='%23a78bfa'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,12 +25,15 @@
   <link rel="stylesheet" href="allocation-styles.css">
 </head>
 <body>
-  <iframe
-    id="cloudApp"
-    title="DEVIL Precifica"
-    src="https://script.google.com/macros/s/AKfycbzJ1CHAt0UuN0f766MWQqZUKqYlpZdvahXxke4nMB9gErx7U5RWPGyyDw7cZWvKdTlM9w/exec"
-    allow="clipboard-read; clipboard-write"
-  ></iframe>
+  <main id="cloudApp">
+    <section class="cloud-card">
+      <div class="cloud-mark">D</div>
+      <h1>DEVIL Precifica</h1>
+      <p>Seu sistema privado de precificação, carteira e separação financeira, sincronizado entre seus aparelhos.</p>
+      <a class="cloud-login" href="https://accounts.google.com/AccountChooser?continue=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FAKfycbzJ1CHAt0UuN0f766MWQqZUKqYlpZdvahXxke4nMB9gErx7U5RWPGyyDw7cZWvKdTlM9w%2Fexec">Continuar com Google</a>
+      <small>Acesso exclusivo da conta Diva Rebel.</small>
+    </section>
+  </main>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
