@@ -289,6 +289,7 @@
   <div class="toast" id="toast" role="status"></div>
   <iframe id="cloudTransport" name="cloudTransport" hidden title="Sincronização segura"></iframe>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="app.js?v=20261009-2"></script>
+  <script>window.addEventListener('error',function(e){var el=document.getElementById('loginError');if(el)el.textContent='Falha ao iniciar: '+e.message;});</script>
+  <script src="app.js?v=20261009-3"></script>
 </body>
 </html>

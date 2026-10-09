@@ -1,5 +1,8 @@
 'use strict';
 
+if (typeof globalThis.structuredClone !== 'function') globalThis.structuredClone = value => JSON.parse(JSON.stringify(value));
+if (typeof crypto.randomUUID !== 'function') crypto.randomUUID = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
 const STORAGE_KEY = 'devil_precifica_v2';
 const businesses = {
   oficina: { label: 'OFICINA DIVA REBEL', short: 'Oficina' },
