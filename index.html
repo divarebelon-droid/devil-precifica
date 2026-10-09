@@ -290,6 +290,6 @@
   <iframe id="cloudTransport" name="cloudTransport" hidden title="Sincronização segura"></iframe>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script>window.addEventListener('error',function(e){var el=document.getElementById('loginError');if(el)el.textContent='Falha ao iniciar: '+e.message;});</script>
-  <script src="app.js?v=20261009-4"></script>
+  <script src="app.js?v=20261009-5" onload="window.APP_LOADED=true" onerror="document.getElementById('loginError').textContent='Falha ao baixar o sistema.'"></script>
 </body>
 </html>

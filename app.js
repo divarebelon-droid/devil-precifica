@@ -1,4 +1,5 @@
 'use strict';
+window.APP_STAGE = 'inicio';
 
 if (typeof globalThis.structuredClone !== 'function') globalThis.structuredClone = value => JSON.parse(JSON.stringify(value));
 if (typeof crypto.randomUUID !== 'function') crypto.randomUUID = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -46,6 +47,7 @@ function loadState() {
 }
 
 let state = loadState();
+window.APP_STAGE = 'estado';
 let saveTimer;
 let cloudSaveTimer;
 let googleCredential = '';
@@ -81,6 +83,7 @@ function cloudRequest(action, data = '') {
 }
 
 window.handleCredentialResponse = function(response) {
+  window.APP_STAGE = 'login-pronto';
   googleCredential = response && response.credential || '';
   $('#loginError').textContent = '';
   cloudRequest('get');
