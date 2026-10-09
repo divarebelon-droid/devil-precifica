@@ -51,7 +51,7 @@ window.APP_STAGE = 'estado';
 let saveTimer;
 let cloudSaveTimer;
 let googleCredential = '';
-const CLOUD_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzYtXCvp-ifq2e593VdsnBquH_8a5lOCox8Y4GG0_R2XA0gkC2x0mP9-Ah3aJNlsZ7DUA/exec';
+const CLOUD_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwwIzg_N2tu2sqRwfAdMW6g2hV_bE-c5xEVK-vZNOPyLTVl-hfBsySI5J2mpqs6AECQ/exec';
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const num = value => Math.max(0, Number(value) || 0);
