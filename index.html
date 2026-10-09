@@ -8,7 +8,9 @@
   <title>DEVIL Precifica</title>
   <style>
     html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #0b0b0e; }
-    body > :not(#cloudApp) { display: none !important; }
+    body > :not(#cloudApp):not(#cloudTransport) { visibility: hidden; }
+    body.authenticated > :not(#cloudApp):not(#cloudTransport) { visibility: visible; }
+    body.authenticated #cloudApp { display: none; }
     #cloudApp { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px; box-sizing: border-box; background: radial-gradient(circle at 50% 20%, #24163f 0, #0b0b0e 50%); color: #fff; font-family: "DM Sans", sans-serif; }
     .cloud-card { width: min(520px, 100%); padding: 52px 42px; box-sizing: border-box; text-align: center; border: 1px solid #33264b; border-radius: 28px; background: rgba(18, 16, 24, .94); box-shadow: 0 24px 80px rgba(0,0,0,.45); }
     .cloud-mark { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 22px; border-radius: 18px; background: #a78bfa; color: #120f19; font: 800 32px/1 Manrope, sans-serif; }
@@ -16,6 +18,8 @@
     .cloud-card p { margin: 0 0 28px; color: #b8b1c6; line-height: 1.6; }
     .cloud-login { display: inline-flex; align-items: center; justify-content: center; width: 100%; min-height: 54px; border-radius: 14px; background: #fff; color: #16131d; text-decoration: none; font-weight: 700; }
     .cloud-card small { display: block; margin-top: 18px; color: #81788f; }
+    #googleLogin { display: flex; justify-content: center; min-height: 44px; }
+    #loginError { min-height: 22px; margin-top: 14px; color: #ff9b9b; font-size: 14px; }
   </style>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b0b0e'/%3E%3Cpath d='M18 16h16c10 0 16 6 16 16S44 48 34 48H18V16Zm10 9v14h6c4 0 6-2 6-7s-2-7-6-7h-6Z' fill='%23a78bfa'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,7 +34,9 @@
       <div class="cloud-mark">D</div>
       <h1>DEVIL Precifica</h1>
       <p>Seu sistema privado de precificação, carteira e separação financeira, sincronizado entre seus aparelhos.</p>
-      <a class="cloud-login" href="https://accounts.google.com/AccountChooser?Email=divarebel.on%40gmail.com&amp;continue=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FAKfycbxTfOETJI2AVL72o1uFsRGNvW3GtgzyyBhzAKombXWAjNcfchO8InNJJDWIqa235pUG8Q%2Fexec">Continuar com Google</a>
+      <div id="g_id_onload" data-client_id="418679513067-ag4f55qi3majrmlbo5a5p9l7b65jqj9f.apps.googleusercontent.com" data-callback="handleCredentialResponse" data-auto_prompt="false"></div>
+      <div id="googleLogin" class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="continue_with" data-size="large" data-logo_alignment="left"></div>
+      <div id="loginError" role="alert"></div>
       <small>Acesso exclusivo da conta Diva Rebel.</small>
     </section>
   </main>
@@ -281,6 +287,8 @@
   </div>
 
   <div class="toast" id="toast" role="status"></div>
+  <iframe id="cloudTransport" name="cloudTransport" hidden title="Sincronização segura"></iframe>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="app.js"></script>
 </body>
 </html>

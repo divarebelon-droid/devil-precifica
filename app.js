@@ -39,15 +39,14 @@ function freshState() {
 }
 
 function loadState() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (!saved?.profiles?.oficina || !saved?.profiles?.diva) return freshState();
-    return saved;
-  } catch { return freshState(); }
+  return freshState();
 }
 
 let state = loadState();
 let saveTimer;
+let cloudSaveTimer;
+let googleCredential = '';
+const CLOUD_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzYtXCvp-ifq2e593VdsnBquH_8a5lOCox8Y4GG0_R2XA0gkC2x0mP9-Ah3aJNlsZ7DUA/exec';
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const num = value => Math.max(0, Number(value) || 0);
@@ -58,12 +57,56 @@ const pct = value => `${(Number(value) || 0).toFixed(1).replace('.', ',')}%`;
 function profile() { return state.profiles[state.activeBusiness]; }
 
 function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   const el = $('#saveState');
-  el.style.opacity = '1';
+  if (!googleCredential) return;
+  el.style.opacity = '1'; el.textContent = 'Salvando...';
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer = setTimeout(() => cloudRequest('save', JSON.stringify(state)), 500);
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => { el.style.opacity = '.55'; }, 1200);
+  saveTimer = setTimeout(() => { el.style.opacity = '.55'; }, 1800);
 }
+
+function cloudRequest(action, data = '') {
+  const requestId = crypto.randomUUID();
+  const form = document.createElement('form');
+  form.method = 'POST'; form.action = CLOUD_ENDPOINT; form.target = 'cloudTransport'; form.style.display = 'none';
+  ({ action, credential: googleCredential, requestId, data }).forEach?.(() => {});
+  Object.entries({ action, credential: googleCredential, requestId, data }).forEach(([name, value]) => {
+    const input = document.createElement('input'); input.type = 'hidden'; input.name = name; input.value = value; form.appendChild(input);
+  });
+  document.body.appendChild(form); form.submit(); form.remove();
+  return requestId;
+}
+
+window.handleCredentialResponse = function(response) {
+  googleCredential = response && response.credential || '';
+  $('#loginError').textContent = '';
+  cloudRequest('get');
+};
+
+window.addEventListener('message', event => {
+  if (!String(event.origin).endsWith('.googleusercontent.com') && event.origin !== 'https://script.google.com') return;
+  const result = event.data || {};
+  if (!result.ok) {
+    $('#loginError').textContent = result.error || 'Não foi possível acessar seus dados.';
+    return;
+  }
+  if (result.action === 'get') {
+    try {
+      const loaded = result.data ? JSON.parse(result.data) : freshState();
+      if (!loaded?.profiles?.oficina || !loaded?.profiles?.diva) throw new Error('Dados inválidos');
+      state = loaded;
+      document.body.classList.add('authenticated');
+      $('#cloudStatus').textContent = 'Sincronizado com Google';
+      hydrateInputs(); setBusiness(state.activeBusiness || 'oficina'); setView(state.activeView || 'dashboard'); renderAll();
+    } catch {
+      $('#loginError').textContent = 'Os dados salvos não puderam ser carregados.';
+    }
+  } else if (result.action === 'save') {
+    const el = $('#saveState'); el.textContent = 'Salvo'; el.style.opacity = '.55';
+    $('#cloudStatus').textContent = 'Sincronizado com Google';
+  }
+});
 
 function calculate(p = profile()) {
   const c = p.config;
