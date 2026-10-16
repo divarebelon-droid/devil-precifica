@@ -57,7 +57,7 @@
         <button class="nav-item" data-view="estrutura"><span>◇</span>Estrutura</button>
         <button class="nav-item" data-view="tempo"><span>◷</span>Tempo e capacidade</button>
         <button class="nav-item" data-view="ofertas"><span>▦</span>Ofertas</button>
-        <button class="nav-item" data-view="clientes"><span>◎</span>Clientes</button>
+        <button class="nav-item" data-view="clientes"><span>◎</span><span id="navClients">Clientes</span></button>
         <button class="nav-item" data-view="recebimentos"><span>↗</span>Recebimentos</button>
       </nav>
 
@@ -118,9 +118,9 @@
         </div>
 
         <article class="panel portfolio-summary">
-          <div class="panel-title"><div><span class="section-num">03</span><h3>Carteira atual</h3></div><button class="text-btn" data-go="clientes">Gerenciar clientes →</button></div>
+          <div class="panel-title"><div><span class="section-num">03</span><h3 id="portfolioTitle">Carteira atual</h3></div><button class="text-btn" data-go="clientes">Gerenciar →</button></div>
           <div class="summary-row">
-            <div><span>Clientes ativos</span><strong id="summaryClients">0</strong></div>
+            <div><span id="activeClientsLabel">Clientes ativos</span><strong id="summaryClients">0</strong></div>
             <div><span>Receita mensal</span><strong id="summaryClientRevenue">R$ 0</strong></div>
             <div><span>Horas consumidas</span><strong id="summaryClientHours">0h</strong></div>
             <div><span>Capacidade livre</span><strong id="summaryFreeCapacity">0h</strong></div>
@@ -134,8 +134,8 @@
           <article class="panel form-panel">
             <div class="panel-title"><div><span class="section-num">01</span><h3>Remuneração da dona</h3></div></div>
             <div class="form-grid two">
-              <label>Pró-labore desejado <span>Quanto você precisa retirar por mês</span><div class="money-input"><b>R$</b><input type="number" min="0" step="100" data-field="prolabore" placeholder="0"></div></label>
-              <label>Salário de reposição <span>Quanto custaria alguém no seu lugar</span><div class="money-input"><b>R$</b><input type="number" min="0" step="100" data-field="replacementSalary" placeholder="0"></div></label>
+              <label>Pró-labore desejado <span>Quanto você precisa retirar por mês</span><div class="money-input"><b>R$</b><input type="number" min="0" step="0.01" data-field="prolabore" placeholder="0"></div></label>
+              <label>Salário de reposição <span>Quanto custaria alguém no seu lugar</span><div class="money-input"><b>R$</b><input type="number" min="0" step="0.01" data-field="replacementSalary" placeholder="0"></div></label>
             </div>
             <label class="toggle-row"><input type="checkbox" data-field="includeReplacement"><span class="toggle"></span><span><strong>Incluir reposição no preço</strong><small>Use quando estiver se preparando para delegar sua função.</small></span></label>
           </article>
@@ -143,12 +143,12 @@
           <article class="panel form-panel">
             <div class="panel-title"><div><span class="section-num">02</span><h3>Custos mensais</h3></div></div>
             <div class="form-grid two">
-              <label>Ferramentas <div class="money-input"><b>R$</b><input type="number" min="0" data-field="tools" placeholder="0"></div></label>
-              <label>Contabilidade e taxas fixas <div class="money-input"><b>R$</b><input type="number" min="0" data-field="accounting" placeholder="0"></div></label>
-              <label>Infraestrutura <div class="money-input"><b>R$</b><input type="number" min="0" data-field="infrastructure" placeholder="0"></div></label>
-              <label>Outros custos fixos <div class="money-input"><b>R$</b><input type="number" min="0" data-field="otherFixed" placeholder="0"></div></label>
-              <label>Equipe e freelancers atuais <div class="money-input"><b>R$</b><input type="number" min="0" data-field="currentTeam" placeholder="0"></div></label>
-              <label>Contratações planejadas <div class="money-input"><b>R$</b><input type="number" min="0" data-field="futureTeam" placeholder="0"></div></label>
+              <label>Ferramentas <div class="money-input"><b>R$</b><input type="number" min="0" step="0.01" data-field="tools" placeholder="0"></div></label>
+              <label>Contabilidade e taxas fixas <div class="money-input"><b>R$</b><input type="number" min="0" step="0.01" data-field="accounting" placeholder="0"></div></label>
+              <label>Infraestrutura <div class="money-input"><b>R$</b><input type="number" min="0" step="0.01" data-field="infrastructure" placeholder="0"></div></label>
+              <label>Outros custos fixos <div class="money-input"><b>R$</b><input type="number" min="0" step="0.01" data-field="otherFixed" placeholder="0"></div></label>
+              <label>Equipe e freelancers atuais <div class="money-input"><b>R$</b><input type="number" min="0" step="0.01" data-field="currentTeam" placeholder="0"></div></label>
+              <label>Contratações planejadas <div class="money-input"><b>R$</b><input type="number" min="0" step="0.01" data-field="futureTeam" placeholder="0"></div></label>
             </div>
           </article>
         </div>
@@ -215,18 +215,18 @@
       <section class="view" id="view-clientes">
         <div class="section-intro"><div><p class="kicker">RENTABILIDADE REAL</p><h2>Quem sustenta e quem drena sua empresa?</h2></div><p>Cadastre o pacote atual e veja, na hora, quanto separar para investimento, pró-labore e caixa.</p></div>
         <article class="panel form-panel compact-form">
-          <div class="panel-title"><div><span class="section-num">+</span><h3>Adicionar cliente</h3></div></div>
+          <div class="panel-title"><div><span class="section-num">+</span><h3 id="addClientTitle">Adicionar cliente</h3></div></div>
           <form id="clientForm" class="inline-form">
-            <label>Cliente<input required name="name" placeholder="Nome do cliente"></label>
+            <label><span id="clientNameLabel">Cliente</span><input id="clientNameInput" required name="name" placeholder="Nome do cliente"></label>
             <label>Oferta<select name="offer" id="clientOffer"></select></label>
-            <label>Valor mensal<div class="money-input"><b>R$</b><input required type="number" min="0" name="price" placeholder="0"></div></label>
+            <label>Valor mensal<div class="money-input"><b>R$</b><input required type="number" min="0" step="0.01" name="price" placeholder="0"></div></label>
             <label>Horas reais<div class="unit-input"><input required type="number" min="0" step="0.5" name="hours" placeholder="0"><b>h</b></div></label>
-            <label>Custo direto<div class="money-input"><b>R$</b><input type="number" min="0" name="directCost" placeholder="0"></div></label>
+            <label>Custo direto<div class="money-input"><b>R$</b><input type="number" min="0" step="0.01" name="directCost" placeholder="0"></div></label>
             <button class="primary-btn" type="submit">Adicionar</button>
           </form>
         </article>
         <div class="client-list" id="clientList"></div>
-        <div class="empty-state" id="clientEmpty"><div>◎</div><h3>Nenhum cliente cadastrado</h3><p>Adicione o primeiro para descobrir a rentabilidade real da sua carteira.</p></div>
+        <div class="empty-state" id="clientEmpty"><div>◎</div><h3 id="emptyClientsTitle">Nenhum cliente cadastrado</h3><p>Adicione o primeiro registro para descobrir a rentabilidade real.</p></div>
       </section>
 
       <section class="view" id="view-recebimentos">
@@ -277,7 +277,7 @@
         <label>O que está incluso<textarea name="deliverables" rows="4" placeholder="Entregas, reuniões, suporte, revisões..."></textarea></label>
         <div class="form-grid two">
           <label>Horas por cliente/mês<div class="unit-input"><input required type="number" min="0" step="0.5" name="hours" placeholder="0"><b>h</b></div></label>
-          <label>Custo direto por cliente<div class="money-input"><b>R$</b><input type="number" min="0" name="directCost" placeholder="0"></div></label>
+          <label>Custo direto por cliente<div class="money-input"><b>R$</b><input type="number" min="0" step="0.01" name="directCost" placeholder="0"></div></label>
           <label>Risco de escopo<div class="percent-input"><input type="number" min="0" max="100" name="risk" value="10"><b>%</b></div></label>
           <label>Valor estratégico adicional<div class="percent-input"><input type="number" min="0" max="200" name="premium" value="20"><b>%</b></div></label>
         </div>
@@ -289,7 +289,8 @@
   <div class="toast" id="toast" role="status"></div>
   <iframe id="cloudTransport" name="cloudTransport" hidden title="Sincronização segura"></iframe>
   <script>window.addEventListener('error',function(e){var el=document.getElementById('loginError');if(el)el.textContent='Falha ao iniciar: '+e.message;});</script>
-  <script src="app.js?v=20261009-7" onload="window.APP_LOADED=true" onerror="document.getElementById('loginError').textContent='Falha ao baixar o sistema.'"></script>
+  <script src="app.js?v=20261016-1" onload="window.APP_LOADED=true" onerror="document.getElementById('loginError').textContent='Falha ao baixar o sistema.'"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </body>
 </html>
+
