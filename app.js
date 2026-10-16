@@ -56,7 +56,7 @@ const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const num = value => Math.max(0, Number(value) || 0);
 const money = value => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 2 }).format(Number(value) || 0);
-const wholeMoney = value => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(Number(value) || 0);
+const wholeMoney = money;
 const pct = value => `${(Number(value) || 0).toFixed(1).replace('.', ',')}%`;
 
 function profile() { return state.profiles[state.activeBusiness]; }
@@ -156,9 +156,28 @@ function setBusiness(type) {
   state.activeBusiness = type;
   $$('.business-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.business === type));
   $('#businessLabel').textContent = businesses[type].label;
+  applyBusinessCopy();
   hydrateInputs();
   renderAll();
   save();
+}
+
+function applyBusinessCopy() {
+  const diva = state.activeBusiness === 'diva';
+  const values = {
+    navClients: diva ? 'Alunas e vendas' : 'Clientes',
+    portfolioTitle: diva ? 'Vendas e alunas' : 'Carteira atual',
+    activeClientsLabel: diva ? 'Alunas / vendas' : 'Clientes ativos',
+    addClientTitle: diva ? 'Adicionar aluna ou venda' : 'Adicionar cliente',
+    clientNameLabel: diva ? 'Aluna / venda' : 'Cliente',
+    emptyClientsTitle: diva ? 'Nenhuma aluna ou venda cadastrada' : 'Nenhum cliente cadastrado'
+  };
+  Object.entries(values).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+  });
+  const input = document.getElementById('clientNameInput');
+  if (input) input.placeholder = diva ? 'Nome da aluna ou venda' : 'Nome do cliente';
 }
 
 function hydrateInputs() {
@@ -264,7 +283,7 @@ function renderClients() {
     const profit = num(client.price) - tax - num(client.directCost) - num(client.hours) * m.costHour;
     const margin = num(client.price) ? profit / num(client.price) * 100 : 0;
     const status = margin < 0 ? ['bad','Prejuízo'] : margin < num(p.config.profitMargin) ? ['warn','Atenção'] : ['good','Saudável'];
-    return `<article class="client-card"><div class="client-row"><div class="client-name"><span>CLIENTE</span><strong>${escapeHtml(client.name)}</strong></div><div><span>OFERTA</span><strong>${escapeHtml(offer?.name || 'Personalizada')}</strong></div><div><span>VALOR</span><strong>${wholeMoney(client.price)}</strong></div><div><span>HORAS</span><strong>${num(client.hours)}h</strong></div><div><span>VALOR/HORA</span><strong>${money(num(client.hours) ? num(client.price)/num(client.hours) : 0)}</strong></div><div><span>MARGEM</span><strong>${pct(margin)}</strong></div><strong class="profit-status ${status[0]}">${status[1]}</strong><button class="icon-btn danger-link" data-delete-client="${client.id}" aria-label="Excluir cliente">×</button></div><div class="client-allocation"><div><span>DISPONÍVEL PARA DIVIDIR</span><strong>${money(available)}</strong><small>após ${money(tax)} de imposto e ${money(client.directCost)} de custo direto</small></div><div class="allocation-item invest-item"><span>INVESTIMENTO ${num(p.splits.invest)}%</span><strong>${money(invest)}</strong></div><div class="allocation-item prolabore-item"><span>PRÓ-LABORE ${num(p.splits.prolabore)}%</span><strong>${money(prolabore)}</strong></div><div class="allocation-item cash-item"><span>CAIXA ${num(p.splits.cash)}%</span><strong>${money(cash)}</strong></div></div></article>`;
+    return `<article class="client-card"><div class="client-row"><div class="client-name"><span>${state.activeBusiness === 'diva' ? 'ALUNA / VENDA' : 'CLIENTE'}</span><strong>${escapeHtml(client.name)}</strong></div><div><span>OFERTA</span><strong>${escapeHtml(offer?.name || 'Personalizada')}</strong></div><div><span>VALOR</span><strong>${wholeMoney(client.price)}</strong></div><div><span>HORAS</span><strong>${num(client.hours)}h</strong></div><div><span>VALOR/HORA</span><strong>${money(num(client.hours) ? num(client.price)/num(client.hours) : 0)}</strong></div><div><span>MARGEM</span><strong>${pct(margin)}</strong></div><strong class="profit-status ${status[0]}">${status[1]}</strong><button class="icon-btn danger-link" data-delete-client="${client.id}" aria-label="Excluir registro">×</button></div><div class="client-allocation"><div><span>DISPONÍVEL PARA DIVIDIR</span><strong>${money(available)}</strong><small>após ${money(tax)} de imposto e ${money(client.directCost)} de custo direto</small></div><div class="allocation-item invest-item"><span>INVESTIMENTO ${num(p.splits.invest)}%</span><strong>${money(invest)}</strong></div><div class="allocation-item prolabore-item"><span>PRÓ-LABORE ${num(p.splits.prolabore)}%</span><strong>${money(prolabore)}</strong></div><div class="allocation-item cash-item"><span>CAIXA ${num(p.splits.cash)}%</span><strong>${money(cash)}</strong></div></div></article>`;
   }).join('');
   $('#clientEmpty').style.display = p.clients.length ? 'none' : 'block';
 }
@@ -358,3 +377,4 @@ $('#mixRows').addEventListener('input', event => { if(!event.target.matches('[da
 $('#receiptForm').elements.date.value = new Date().toISOString().slice(0,10);
 setBusiness(state.activeBusiness || 'oficina');
 setView(state.activeView || 'dashboard');
+
