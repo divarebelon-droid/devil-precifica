@@ -41,18 +41,20 @@ function freshState() {
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (!saved?.profiles?.oficina || !saved?.profiles?.diva) return freshState();
+    if (!saved || !saved.profiles || !saved.profiles.oficina || !saved.profiles.diva) return freshState();
     return saved;
   } catch { return freshState(); }
 }
 
 let state = loadState();
 let saveTimer;
+let cloudSaveTimer;
+let cloudLoaded = false;
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const num = value => Math.max(0, Number(value) || 0);
 const money = value => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 2 }).format(Number(value) || 0);
-const wholeMoney = value => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(Number(value) || 0);
+const wholeMoney = money;
 const pct = value => `${(Number(value) || 0).toFixed(1).replace('.', ',')}%`;
 
 function profile() { return state.profiles[state.activeBusiness]; }
@@ -60,9 +62,67 @@ function profile() { return state.profiles[state.activeBusiness]; }
 function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   const el = $('#saveState');
+  const cloud = $('#cloudStatus');
   el.style.opacity = '1';
+  if (cloudLoaded && typeof google !== 'undefined' && google.script && google.script.run) {
+    el.textContent = 'Salvando...';
+    if (cloud) cloud.textContent = 'Salvando no Google...';
+    clearTimeout(cloudSaveTimer);
+    cloudSaveTimer = setTimeout(saveToCloud, 550);
+  }
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => { el.style.opacity = '.55'; }, 1200);
+  saveTimer = setTimeout(() => { el.style.opacity = '.55'; }, 1500);
+}
+
+function saveToCloud() {
+  google.script.run
+    .withSuccessHandler(() => {
+      $('#saveState').textContent = 'Salvo online';
+      $('#cloudStatus').textContent = 'Sincronizado com Google';
+    })
+    .withFailureHandler(() => {
+      $('#saveState').textContent = 'Falha ao salvar';
+      $('#cloudStatus').textContent = 'Erro de sincronização';
+      toast('Não foi possível sincronizar. Tente novamente.');
+    })
+    .saveAppData(JSON.stringify(state));
+}
+
+function connectCloud() {
+  if (typeof google === 'undefined' || !google.script || !google.script.run) {
+    cloudLoaded = true;
+    const cloud = $('#cloudStatus');
+    if (cloud) cloud.textContent = 'Modo local de prévia';
+    return;
+  }
+
+  $('#saveState').textContent = 'Carregando...';
+  google.script.run
+    .withSuccessHandler(result => {
+      if (result && result.data) {
+        try {
+          const incoming = JSON.parse(result.data);
+          if (incoming && incoming.profiles && incoming.profiles.oficina && incoming.profiles.diva) state = incoming;
+        } catch (error) { console.warn('Dados online inválidos; usando a cópia local.'); }
+      }
+      cloudLoaded = true;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      hydrateInputs();
+      renderAll();
+      setView(state.activeView || 'dashboard');
+      $$('.business-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.business === state.activeBusiness));
+      $('#businessLabel').textContent = businesses[state.activeBusiness].label;
+      $('#saveState').textContent = 'Salvo online';
+      $('#cloudStatus').textContent = `Google: ${(result && result.email) || 'conectado'}`;
+      if (!result || !result.data) saveToCloud();
+    })
+    .withFailureHandler(() => {
+      cloudLoaded = true;
+      $('#saveState').textContent = 'Modo offline';
+      $('#cloudStatus').textContent = 'Não conectado ao Google';
+      toast('Não foi possível carregar os dados online.');
+    })
+    .getAppData();
 }
 
 function calculate(p = profile()) {
@@ -108,9 +168,25 @@ function setBusiness(type) {
   state.activeBusiness = type;
   $$('.business-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.business === type));
   $('#businessLabel').textContent = businesses[type].label;
+  applyBusinessCopy();
   hydrateInputs();
   renderAll();
   save();
+}
+
+function applyBusinessCopy() {
+  const diva = state.activeBusiness === 'diva';
+  const copy = {
+    navClients: diva ? 'Alunas e vendas' : 'Clientes',
+    portfolioTitle: diva ? 'Vendas e alunas' : 'Carteira atual',
+    activeClientsLabel: diva ? 'Alunas / vendas' : 'Clientes ativos',
+    addClientTitle: diva ? 'Adicionar aluna ou venda' : 'Adicionar cliente',
+    clientNameLabel: diva ? 'Aluna / venda' : 'Cliente',
+    emptyClientsTitle: diva ? 'Nenhuma aluna ou venda cadastrada' : 'Nenhum cliente cadastrado'
+  };
+  Object.entries(copy).forEach(([id, value]) => { const el = document.getElementById(id); if (el) el.textContent = value; });
+  const nameInput = document.getElementById('clientNameInput');
+  if (nameInput) nameInput.placeholder = diva ? 'Nome da aluna ou venda' : 'Nome do cliente';
 }
 
 function hydrateInputs() {
@@ -118,10 +194,10 @@ function hydrateInputs() {
   $$('[data-field]').forEach(input => {
     const value = p.config[input.dataset.field];
     if (input.type === 'checkbox') input.checked = Boolean(value);
-    else input.value = value ?? '';
+    else input.value = value != null ? value : '';
   });
-  $$('[data-time]').forEach(input => input.value = p.time[input.dataset.time] ?? '');
-  $$('[data-split]').forEach(input => input.value = p.splits[input.dataset.split] ?? 0);
+  $$('[data-time]').forEach(input => input.value = p.time[input.dataset.time] != null ? p.time[input.dataset.time] : '');
+  $$('[data-split]').forEach(input => input.value = p.splits[input.dataset.split] != null ? p.splits[input.dataset.split] : 0);
 }
 
 function renderDashboard() {
@@ -153,7 +229,7 @@ function renderDashboard() {
   if (m.fixed === 0) decision.innerHTML = `<span class="status-pill neutral">Comece pela estrutura</span><h4>Preencha seus custos para descobrir o preço mínimo sustentável.</h4><button class="text-btn" data-go="estrutura">Configurar estrutura →</button>`;
   else if (m.deliveryHours === 0) decision.innerHTML = `<span class="status-pill warn">Capacidade incompleta</span><h4>Defina sua rotina para calcular o valor real da sua hora.</h4><button class="text-btn" data-go="tempo">Configurar tempo →</button>`;
   else if (!p.clients.length) decision.innerHTML = `<span class="status-pill neutral">Preço calculado</span><h4>Sua hora saudável é ${money(m.healthyHour)}. Cadastre os clientes para avaliar a carteira.</h4><button class="text-btn" data-go="clientes">Cadastrar clientes →</button>`;
-  else if (m.portfolioMargin < 0) decision.innerHTML = `<span class="status-pill bad">Carteira no prejuízo</span><h4>As horas e os custos cadastrados estão consumindo mais do que a carteira gera.</h4><button class="text-btn" data-go="clientes">Ver diagnóstico →</button>`;
+  else if (0 > m.portfolioMargin) decision.innerHTML = `<span class="status-pill bad">Carteira no prejuízo</span><h4>As horas e os custos cadastrados estão consumindo mais do que a carteira gera.</h4><button class="text-btn" data-go="clientes">Ver diagnóstico →</button>`;
   else if (m.clientHours > m.deliveryHours) decision.innerHTML = `<span class="status-pill warn">Capacidade excedida</span><h4>Sua carteira usa ${m.clientHours.toFixed(1)}h, acima das ${m.deliveryHours.toFixed(1)}h disponíveis.</h4><button class="text-btn" data-go="clientes">Revisar carteira →</button>`;
   else decision.innerHTML = `<span class="status-pill good">Estrutura saudável</span><h4>Sua carteira deixa ${pct(m.portfolioMargin)} de margem estimada e ainda possui ${Math.max(0,m.deliveryHours-m.clientHours).toFixed(1)}h livres.</h4><button class="text-btn" data-go="ofertas">Simular crescimento →</button>`;
 }
@@ -215,8 +291,8 @@ function renderClients() {
     const cash = available * num(p.splits.cash) / 100;
     const profit = num(client.price) - tax - num(client.directCost) - num(client.hours) * m.costHour;
     const margin = num(client.price) ? profit / num(client.price) * 100 : 0;
-    const status = margin < 0 ? ['bad','Prejuízo'] : margin < num(p.config.profitMargin) ? ['warn','Atenção'] : ['good','Saudável'];
-    return `<article class="client-card"><div class="client-row"><div class="client-name"><span>CLIENTE</span><strong>${escapeHtml(client.name)}</strong></div><div><span>OFERTA</span><strong>${escapeHtml(offer?.name || 'Personalizada')}</strong></div><div><span>VALOR</span><strong>${wholeMoney(client.price)}</strong></div><div><span>HORAS</span><strong>${num(client.hours)}h</strong></div><div><span>VALOR/HORA</span><strong>${money(num(client.hours) ? num(client.price)/num(client.hours) : 0)}</strong></div><div><span>MARGEM</span><strong>${pct(margin)}</strong></div><strong class="profit-status ${status[0]}">${status[1]}</strong><button class="icon-btn danger-link" data-delete-client="${client.id}" aria-label="Excluir cliente">×</button></div><div class="client-allocation"><div><span>DISPONÍVEL PARA DIVIDIR</span><strong>${money(available)}</strong><small>após ${money(tax)} de imposto e ${money(client.directCost)} de custo direto</small></div><div class="allocation-item invest-item"><span>INVESTIMENTO ${num(p.splits.invest)}%</span><strong>${money(invest)}</strong></div><div class="allocation-item prolabore-item"><span>PRÓ-LABORE ${num(p.splits.prolabore)}%</span><strong>${money(prolabore)}</strong></div><div class="allocation-item cash-item"><span>CAIXA ${num(p.splits.cash)}%</span><strong>${money(cash)}</strong></div></div></article>`;
+    const status = 0 > margin ? ['bad','Prejuízo'] : num(p.config.profitMargin) > margin ? ['warn','Atenção'] : ['good','Saudável'];
+    return `<article class="client-card"><div class="client-row"><div class="client-name"><span>${state.activeBusiness === 'diva' ? 'ALUNA / VENDA' : 'CLIENTE'}</span><strong>${escapeHtml(client.name)}</strong></div><div><span>OFERTA</span><strong>${escapeHtml((offer && offer.name) || 'Personalizada')}</strong></div><div><span>VALOR</span><strong>${wholeMoney(client.price)}</strong></div><div><span>HORAS</span><strong>${num(client.hours)}h</strong></div><div><span>VALOR/HORA</span><strong>${money(num(client.hours) ? num(client.price)/num(client.hours) : 0)}</strong></div><div><span>MARGEM</span><strong>${pct(margin)}</strong></div><strong class="profit-status ${status[0]}">${status[1]}</strong><button class="icon-btn danger-link" data-delete-client="${client.id}" aria-label="Excluir registro">×</button></div><div class="client-allocation"><div><span>DISPONÍVEL PARA DIVIDIR</span><strong>${money(available)}</strong><small>após ${money(tax)} de imposto e ${money(client.directCost)} de custo direto</small></div><div class="allocation-item invest-item"><span>INVESTIMENTO ${num(p.splits.invest)}%</span><strong>${money(invest)}</strong></div><div class="allocation-item prolabore-item"><span>PRÓ-LABORE ${num(p.splits.prolabore)}%</span><strong>${money(prolabore)}</strong></div><div class="allocation-item cash-item"><span>CAIXA ${num(p.splits.cash)}%</span><strong>${money(cash)}</strong></div></div></article>`;
   }).join('');
   $('#clientEmpty').style.display = p.clients.length ? 'none' : 'block';
 }
@@ -237,13 +313,13 @@ function openOfferModal(id = '') {
   const form = $('#offerForm'); form.reset();
   const offer = profile().offers.find(o => o.id === id);
   $('#offerModalTitle').textContent = offer ? 'Editar oferta' : 'Nova oferta';
-  form.elements.id.value = offer?.id || '';
-  form.elements.name.value = offer?.name || '';
-  form.elements.deliverables.value = offer?.deliverables || '';
-  form.elements.hours.value = offer?.hours || '';
-  form.elements.directCost.value = offer?.directCost || '';
-  form.elements.risk.value = offer?.risk ?? 10;
-  form.elements.premium.value = offer?.premium ?? 20;
+  form.elements.id.value = (offer && offer.id) || '';
+  form.elements.name.value = (offer && offer.name) || '';
+  form.elements.deliverables.value = (offer && offer.deliverables) || '';
+  form.elements.hours.value = (offer && offer.hours) || '';
+  form.elements.directCost.value = (offer && offer.directCost) || '';
+  form.elements.risk.value = offer && offer.risk != null ? offer.risk : 10;
+  form.elements.premium.value = offer && offer.premium != null ? offer.premium : 20;
   $('#offerModal').classList.add('open'); $('#offerModal').setAttribute('aria-hidden','false');
   setTimeout(() => form.elements.name.focus(), 50);
 }
@@ -281,7 +357,7 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeOfferModal
 
 $('#offerForm').addEventListener('submit', event => {
   event.preventDefault(); const f = new FormData(event.currentTarget); const id=f.get('id') || crypto.randomUUID(); const existing=profile().offers.find(o=>o.id===id);
-  const data={id,name:String(f.get('name')).trim(),deliverables:String(f.get('deliverables')).trim(),hours:num(f.get('hours')),directCost:num(f.get('directCost')),risk:num(f.get('risk')),premium:num(f.get('premium')),mix:existing?.mix||0};
+  const data={id,name:String(f.get('name')).trim(),deliverables:String(f.get('deliverables')).trim(),hours:num(f.get('hours')),directCost:num(f.get('directCost')),risk:num(f.get('risk')),premium:num(f.get('premium')),mix:(existing && existing.mix)||0};
   if(existing) Object.assign(existing,data); else profile().offers.push(data); save(); closeOfferModal(); renderAll(); toast('Oferta salva');
 });
 
@@ -310,3 +386,5 @@ $('#mixRows').addEventListener('input', event => { if(!event.target.matches('[da
 $('#receiptForm').elements.date.value = new Date().toISOString().slice(0,10);
 setBusiness(state.activeBusiness || 'oficina');
 setView(state.activeView || 'dashboard');
+connectCloud();
+
