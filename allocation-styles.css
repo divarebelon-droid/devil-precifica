@@ -5,6 +5,25 @@
   overflow: hidden;
 }
 
+.client-form-actions,
+.client-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.client-form-actions {
+  align-self: end;
+}
+
+.client-form-actions .ghost-btn {
+  min-height: 44px;
+}
+
+.client-row-actions {
+  justify-content: flex-end;
+}
+
 .client-card .client-row {
   background: transparent;
   border: 0;
@@ -56,3 +75,4 @@
   .client-card { background: #fff; color: #111; border-color: #ccc; }
   .client-allocation > div { background: #fff; }
 }
+
