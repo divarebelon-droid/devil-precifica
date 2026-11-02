@@ -283,7 +283,7 @@ function renderClients() {
     const profit = num(client.price) - tax - num(client.directCost) - num(client.hours) * m.costHour;
     const margin = num(client.price) ? profit / num(client.price) * 100 : 0;
     const status = margin < 0 ? ['bad','Prejuízo'] : margin < num(p.config.profitMargin) ? ['warn','Atenção'] : ['good','Saudável'];
-    return `<article class="client-card"><div class="client-row"><div class="client-name"><span>${state.activeBusiness === 'diva' ? 'ALUNA / VENDA' : 'CLIENTE'}</span><strong>${escapeHtml(client.name)}</strong></div><div><span>OFERTA</span><strong>${escapeHtml(offer?.name || 'Personalizada')}</strong></div><div><span>VALOR</span><strong>${wholeMoney(client.price)}</strong></div><div><span>HORAS</span><strong>${num(client.hours)}h</strong></div><div><span>VALOR/HORA</span><strong>${money(num(client.hours) ? num(client.price)/num(client.hours) : 0)}</strong></div><div><span>MARGEM</span><strong>${pct(margin)}</strong></div><strong class="profit-status ${status[0]}">${status[1]}</strong><button class="icon-btn danger-link" data-delete-client="${client.id}" aria-label="Excluir registro">×</button></div><div class="client-allocation"><div><span>DISPONÍVEL PARA DIVIDIR</span><strong>${money(available)}</strong><small>após ${money(tax)} de imposto e ${money(client.directCost)} de custo direto</small></div><div class="allocation-item invest-item"><span>INVESTIMENTO ${num(p.splits.invest)}%</span><strong>${money(invest)}</strong></div><div class="allocation-item prolabore-item"><span>PRÓ-LABORE ${num(p.splits.prolabore)}%</span><strong>${money(prolabore)}</strong></div><div class="allocation-item cash-item"><span>CAIXA ${num(p.splits.cash)}%</span><strong>${money(cash)}</strong></div></div></article>`;
+    return `<article class="client-card"><div class="client-row"><div class="client-name"><span>${state.activeBusiness === 'diva' ? 'ALUNA / VENDA' : 'CLIENTE'}</span><strong>${escapeHtml(client.name)}</strong></div><div><span>OFERTA</span><strong>${escapeHtml(offer?.name || 'Personalizada')}</strong></div><div><span>VALOR</span><strong>${wholeMoney(client.price)}</strong></div><div><span>HORAS</span><strong>${num(client.hours)}h</strong></div><div><span>VALOR/HORA</span><strong>${money(num(client.hours) ? num(client.price)/num(client.hours) : 0)}</strong></div><div><span>MARGEM</span><strong>${pct(margin)}</strong></div><strong class="profit-status ${status[0]}">${status[1]}</strong><div class="client-row-actions"><button class="icon-btn" data-edit-client="${client.id}" aria-label="Editar registro">✎</button><button class="icon-btn danger-link" data-delete-client="${client.id}" aria-label="Excluir registro">×</button></div></div><div class="client-allocation"><div><span>DISPONÍVEL PARA DIVIDIR</span><strong>${money(available)}</strong><small>após ${money(tax)} de imposto e ${money(client.directCost)} de custo direto</small></div><div class="allocation-item invest-item"><span>INVESTIMENTO ${num(p.splits.invest)}%</span><strong>${money(invest)}</strong></div><div class="allocation-item prolabore-item"><span>PRÓ-LABORE ${num(p.splits.prolabore)}%</span><strong>${money(prolabore)}</strong></div><div class="allocation-item cash-item"><span>CAIXA ${num(p.splits.cash)}%</span><strong>${money(cash)}</strong></div></div></article>`;
   }).join('');
   $('#clientEmpty').style.display = p.clients.length ? 'none' : 'block';
 }
@@ -316,6 +316,29 @@ function openOfferModal(id = '') {
 }
 
 function closeOfferModal() { $('#offerModal').classList.remove('open'); $('#offerModal').setAttribute('aria-hidden','true'); }
+function resetClientForm() {
+  const form = $('#clientForm');
+  form.reset(); form.elements.id.value = '';
+  $('#saveClientBtn').textContent = 'Adicionar';
+  $('#cancelClientEdit').hidden = true;
+  applyBusinessCopy(); renderOfferSelect();
+}
+function editClient(id) {
+  const client = profile().clients.find(item => item.id === id);
+  if (!client) return;
+  const form = $('#clientForm');
+  form.elements.id.value = client.id;
+  form.elements.name.value = client.name || '';
+  form.elements.offer.value = client.offer || '';
+  form.elements.price.value = num(client.price);
+  form.elements.hours.value = num(client.hours);
+  form.elements.directCost.value = num(client.directCost);
+  $('#addClientTitle').textContent = state.activeBusiness === 'diva' ? 'Editar aluna ou venda' : 'Editar cliente';
+  $('#saveClientBtn').textContent = 'Salvar alterações';
+  $('#cancelClientEdit').hidden = false;
+  form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  setTimeout(() => form.elements.name.focus(), 250);
+}
 function escapeHtml(value='') { const div=document.createElement('div'); div.textContent=String(value); return div.innerHTML; }
 function formatDate(value) { if(!value) return ''; return new Intl.DateTimeFormat('pt-BR',{timeZone:'UTC'}).format(new Date(`${value}T00:00:00Z`)); }
 function toast(message) { const el=$('#toast'); el.textContent=message; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2200); }
@@ -325,6 +348,7 @@ document.addEventListener('click', event => {
   const go = event.target.closest('[data-go]'); if(go) setView(go.dataset.go);
   const business = event.target.closest('[data-business]'); if(business) setBusiness(business.dataset.business);
   const edit = event.target.closest('[data-edit-offer]'); if(edit) openOfferModal(edit.dataset.editOffer);
+  const editClientButton = event.target.closest('[data-edit-client]'); if(editClientButton) editClient(editClientButton.dataset.editClient);
   const delOffer = event.target.closest('[data-delete-offer]');
   if(delOffer && confirm('Excluir esta oferta? Os clientes continuam salvos como oferta personalizada.')) { profile().offers = profile().offers.filter(o=>o.id!==delOffer.dataset.deleteOffer); save(); renderAll(); }
   const delClient = event.target.closest('[data-delete-client]');
@@ -353,8 +377,14 @@ $('#offerForm').addEventListener('submit', event => {
 });
 
 $('#clientForm').addEventListener('submit', event => {
-  event.preventDefault(); const f=new FormData(event.currentTarget); profile().clients.push({id:crypto.randomUUID(),name:String(f.get('name')).trim(),offer:String(f.get('offer')),price:num(f.get('price')),hours:num(f.get('hours')),directCost:num(f.get('directCost'))}); event.currentTarget.reset(); save(); renderAll(); toast('Cliente adicionado');
+  event.preventDefault();
+  const f = new FormData(event.currentTarget), id = String(f.get('id') || ''), existing = profile().clients.find(item => item.id === id);
+  const data = { id: id || crypto.randomUUID(), name:String(f.get('name')).trim(), offer:String(f.get('offer')), price:num(f.get('price')), hours:num(f.get('hours')), directCost:num(f.get('directCost')) };
+  if (existing) Object.assign(existing, data); else profile().clients.push(data);
+  const wasEditing = Boolean(existing); resetClientForm(); save(); renderAll(); toast(wasEditing ? 'Alterações salvas' : 'Registro adicionado');
 });
+
+$('#cancelClientEdit').addEventListener('click', resetClientForm);
 
 $('#clientOffer').addEventListener('change', event => {
   const offer = profile().offers.find(item => item.id === event.target.value);
