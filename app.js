@@ -102,7 +102,14 @@ window.addEventListener('message', event => {
       if (!loaded?.profiles?.oficina || !loaded?.profiles?.diva) throw new Error('Dados inválidos');
       state = loaded;
       document.body.classList.add('authenticated');
-      $('#cloudStatus').textContent = 'Sincronizado com Google';
+      const sync = loaded.externalSync;
+      if (sync) {
+        const labels = [`Planilha ${sync.sheet ? 'ok' : 'falhou'}`, `ClickUp ${sync.clickup ? 'ok' : 'falhou'}`];
+        $('#cloudStatus').textContent = `Google · ${labels.join(' · ')}`;
+        if (sync.warnings?.length) toast(`Falha na sincronização: ${sync.warnings.join(' | ')}`);
+      } else {
+        $('#cloudStatus').textContent = 'Sincronizado com Google';
+      }
       hydrateInputs(); setBusiness(state.activeBusiness || 'oficina'); setView(state.activeView || 'dashboard'); renderAll();
     } catch {
       $('#loginError').textContent = 'Os dados salvos não puderam ser carregados.';
